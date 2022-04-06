@@ -2,6 +2,7 @@ from copy import deepcopy
 import random
 from math import inf as infinety
 from Heuristic import h
+
 empty = -1
 player_card = 1
 AI_card = 2
@@ -15,6 +16,7 @@ AI_player = 0
 
 def minimax_algorithm(current_state, depth, is_maximizing):
     valid_locations = get_valid_locations(current_state)
+
     #is_game_over = game_over(current_state)
 
     if depth == 0 and len(valid_locations) != 0:
@@ -28,10 +30,12 @@ def minimax_algorithm(current_state, depth, is_maximizing):
             return -infinety,None
         else:
             return 0,None
+
     if is_maximizing:  # AI-player
         max_Eval = -infinety
         col = random.choice(valid_locations)
         for column in valid_locations:
+ 
             row = get_row(current_state, column)
             board_copy = deepcopy(current_state)
             add_pice(board_copy, row, column, AI_card)
@@ -40,10 +44,12 @@ def minimax_algorithm(current_state, depth, is_maximizing):
                 max_Eval = new_score
                 col = column
         return max_Eval,col
+
     else:
         min_Eval = +infinety
         col = random.choice(valid_locations)
         for column in valid_locations:
+ 
             row = get_row(current_state, column)
             board_copy = deepcopy(current_state)
             add_pice(board_copy, row, column, player_card)  # call GUI function to add card
@@ -54,8 +60,10 @@ def minimax_algorithm(current_state, depth, is_maximizing):
         return min_Eval,col
 
 
+
 def minimax_algorithm_alpha_beta(current_state, depth, alpha, beta, is_maximizing):
     valid_locations = get_valid_locations(current_state)
+ 
     # is_game_over = game_over(current_state)
 
     if depth == 0 and len(valid_locations) != 0:
@@ -77,32 +85,39 @@ def minimax_algorithm_alpha_beta(current_state, depth, alpha, beta, is_maximizin
             board_copy = deepcopy(current_state)
             add_pice(board_copy, row, column, AI_card)
             new_score, c = minimax_algorithm(board_copy, depth - 1, False)
+
             if new_score > max_Eval:
                 max_Eval = new_score
                 col = column
                 alpha = max(alpha, max_Eval)
                 if alpha >= beta:
                     break
+ 
         return max_Eval,col
+
     else:
         min_Eval = +infinety
         col = random.choice(valid_locations)
         for column in valid_locations:
+ 
             row = get_row(current_state, column)
             board_copy = deepcopy(current_state)
             add_pice(board_copy, row, column, player_card)  # call GUI function to add card
             new_score, c = minimax_algorithm(board_copy, depth - 1, True)
+
             if new_score < min_Eval:
                 min_Eval = new_score
                 col = column
             beta = min(alpha, min_Eval)
             if alpha >= beta:
                 break
+ 
         return min_Eval,col
 
 
 def get_row(current_state, col):
     for row in range(rows-1,-1,-1):
+
         if current_state[row][col] == 0:
             return row
 
@@ -121,7 +136,9 @@ def get_valid_locations(current_state):
 
 def is_location_valid(current_state, col):
     is_valid = False
+    
     if current_state[0][col] == 0:
+
         is_valid = True
     return is_valid
 
@@ -129,6 +146,7 @@ def is_location_valid(current_state, col):
 def game_over(current_state):
     return winning(current_state, player_card) or winning(current_state, AI_card) or len(
         get_valid_locations(current_state)) == 0
+
 
 
 def winning(current_state, card_type):

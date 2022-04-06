@@ -15,4 +15,3 @@ if __name__ == '__main__':
     AI_start = True
     _val = minimax_algorithm(board , depth , AI_start)
     print(_val)
-
