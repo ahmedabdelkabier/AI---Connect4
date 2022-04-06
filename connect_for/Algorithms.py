@@ -1,6 +1,7 @@
+from copy import deepcopy
 import random
 from math import inf as infinety
-
+from Heuristic import h
 empty = -1
 player_card = 1
 AI_card = 2
@@ -14,91 +15,94 @@ AI_player = 0
 
 def minimax_algorithm(current_state, depth, is_maximizing):
     valid_locations = get_valid_locations(current_state)
-    is_game_over = game_over(current_state)
+    #is_game_over = game_over(current_state)
 
-    if depth == 0 or is_game_over:
-        if is_game_over:
-            if winning(current_state, AI_card):
-                return +infinety
-            elif winning(current_state, player_card):
-                return -infinety
-            else:
-                return 0
-
+    if depth == 0 and len(valid_locations) != 0:
+        return h(current_state , AI_card),None
+    if len(valid_locations) == 0:
+        AI_score = winning(current_state , AI_card)
+        Humman_score = winning(current_state , player_card)
+        if(AI_score > Humman_score):
+            return +infinety,None
+        elif(AI_score < Humman_score):
+            return -infinety,None
+        else:
+            return 0,None
     if is_maximizing:  # AI-player
         max_Eval = -infinety
         col = random.choice(valid_locations)
         for column in valid_locations:
-            row = get_row(current_state, col)
-            board_copy = current_state.copy()
+            row = get_row(current_state, column)
+            board_copy = deepcopy(current_state)
             add_pice(board_copy, row, column, AI_card)
-            new_score = minimax_algorithm(board_copy, depth - 1, False)
+            new_score ,c = minimax_algorithm(board_copy, depth - 1, False)
             if new_score > max_Eval:
                 max_Eval = new_score
                 col = column
-        return max_Eval
+        return max_Eval,col
     else:
         min_Eval = +infinety
         col = random.choice(valid_locations)
         for column in valid_locations:
-            row = get_row(current_state, col)
-            board_copy = current_state.copy()
-            add_pice(board_copy, row, col, player_card)  # call GUI function to add card
-            new_score = minimax_algorithm(board_copy, depth - 1, True)
+            row = get_row(current_state, column)
+            board_copy = deepcopy(current_state)
+            add_pice(board_copy, row, column, player_card)  # call GUI function to add card
+            new_score,c = minimax_algorithm(board_copy, depth - 1, True)
             if new_score < min_Eval:
                 min_Eval = new_score
                 col = column
-        return min_Eval
+        return min_Eval,col
 
 
 def minimax_algorithm_alpha_beta(current_state, depth, alpha, beta, is_maximizing):
     valid_locations = get_valid_locations(current_state)
-    is_game_over = game_over(current_state)
+    # is_game_over = game_over(current_state)
 
-    if depth == 0 or is_game_over:
-        if is_game_over:
-            if winning(current_state, player_card):
-                return +infinety
-            elif winning(current_state, AI_card):
-                return -infinety
-            else:
-                return 0
-
-    if is_maximizing:
+    if depth == 0 and len(valid_locations) != 0:
+        return h(current_state, AI_card), None
+    if len(valid_locations) == 0:
+        AI_score = winning(current_state, AI_card)
+        Humman_score = winning(current_state, player_card)
+        if (AI_score > Humman_score):
+            return +infinety, None
+        elif (AI_score < Humman_score):
+            return -infinety, None
+        else:
+            return 0, None
+    if is_maximizing:  # AI-player
         max_Eval = -infinety
         col = random.choice(valid_locations)
         for column in valid_locations:
-            row = get_row(current_state, col)
-            board_copy = current_state.copy()
+            row = get_row(current_state, column)
+            board_copy = deepcopy(current_state)
             add_pice(board_copy, row, column, AI_card)
-            new_score = minimax_algorithm(board_copy, depth - 1, False)
+            new_score, c = minimax_algorithm(board_copy, depth - 1, False)
             if new_score > max_Eval:
                 max_Eval = new_score
                 col = column
                 alpha = max(alpha, max_Eval)
                 if alpha >= beta:
                     break
-        return max_Eval
-
+        return max_Eval,col
     else:
         min_Eval = +infinety
         col = random.choice(valid_locations)
         for column in valid_locations:
-            row = get_row(current_state, col)
-            board_copy = current_state.copy()
-            add_pice(board_copy, row, col, player_card)
-            new_score = minimax_algorithm(board_copy, depth - 1, True)
+            row = get_row(current_state, column)
+            board_copy = deepcopy(current_state)
+            add_pice(board_copy, row, column, player_card)  # call GUI function to add card
+            new_score, c = minimax_algorithm(board_copy, depth - 1, True)
             if new_score < min_Eval:
                 min_Eval = new_score
                 col = column
             beta = min(alpha, min_Eval)
             if alpha >= beta:
                 break
-        return min_Eval
+        return min_Eval,col
 
 
 def get_row(current_state, col):
-    for row in range(rows):
+    for row in range(rows-1,-1,-1):
         if current_state[row][col] == 0:
             return row
 
@@ -117,7 +121,7 @@ def get_valid_locations(current_state):
 
 def is_location_valid(current_state, col):
     is_valid = False
-    if current_state[columns - 1][col] == 0:
+    if current_state[0][col] == 0:
         is_valid = True
     return is_valid
 
@@ -127,30 +131,83 @@ def game_over(current_state):
         get_valid_locations(current_state)) == 0
 
 
-def winning(current_state, card):
-    # check horizontal win
-    for col in range(columns - 3):
-        for r in range(rows):
-            if current_state[r][col] == card and current_state[r][col + 1] == card and current_state[r][
-                col + 2] == card and current_state[r][col + 3] == card:
-                return True
+def winning(current_state, card_type):
+    _f_counter = 0
+    for row in range(rows):
+        counter = 0
+        for col in range(columns):
+            if current_state[row][col] == card_type and col < columns - 1:
+                counter += 1
+            else:
+                if current_state[row][col] == card_type:
+                    counter += 1
+                while (True):
+                    if counter // 4 != 0:
+                        _f_counter += counter // 4
+                        counter = counter % 4
+                    else:
+                        break
+                counter = 0
+
     # check columns win
     for col in range(columns):
-        for r in range(rows - 3):
-            if current_state[r][col] == card and current_state[r + 1][col] == card and current_state[r + 2][
-                col] == card and current_state[r + 3][col] == card:
-                return True
+        counter_c = 0
+        for r in range(rows):
+            if current_state[r][col] == card_type and r < rows - 1:
+                counter_c += 1
+            else:
+                if current_state[r][col] == card_type:
+                    counter_c += 1
+                while (True):
+                    if counter_c // 4 != 0:
+                        _f_counter += counter_c // 4
+                        counter_c = counter_c % 4
+                    else:
+                        break
+                counter_c = 0
 
-    # check diagonal1
-    for col in range(columns - 3):
-        for r in range(rows - 3):
-            if current_state[r][col] == card and current_state[r + 1][col + 1] == card and current_state[r + 2][
-                col + 2] == card and current_state[r + 3][col + 3] == card:
-                return True
+    # check diagonal1 /
+    for i in range((rows + columns) - 1):
+        counter_d1 = 0
+        for j in range(i + 1):
+            k = i - j
+            flag = False
+            if k < rows and j < columns:
+                if current_state[k][j] == card_type:
+                    counter_d1 += 1
+                    if (j == columns - 1) or k == 0:
+                        flag = True
+                else:
+                    flag = True
 
-    # check diagnonal2
-    for col in range(columns - 3):
-        for r in range(3, rows):
-            if current_state[r][col] == card and current_state[r - 1][col + 1] == card and current_state[r - 2][
-                col + 2] == card and current_state[r - 3][col + 3] == card:
-                return True
+                if flag:
+                    while True:
+                        if counter_d1 // 4 != 0:
+                            _f_counter += counter_d1 // 4
+                            counter_d1 = counter_d1 % 4
+                        else:
+                            break
+                    counter_d1 = 0
+
+    # check diagnonal2 \ upwards
+    for i in range(1 - rows, columns):
+        counter_d2 = 0
+        for j in range(rows):
+            flag = False
+            if (i + j) >= 0 and (i + j) < columns:
+                if current_state[j][i + j] == card_type:
+                    counter_d2 += 1
+                    if i + j == columns - 1 or j == rows - 1:
+                        flag = True
+                else:
+                    flag = True
+
+                if flag:
+                    while (True):
+                        if counter_d2 // 4 != 0:
+                            _f_counter += counter_d2 // 4
+                            counter_d2 = counter_d2 % 4
+                        else:
+                            break
+                    counter_d2 = 0
+    return _f_counter

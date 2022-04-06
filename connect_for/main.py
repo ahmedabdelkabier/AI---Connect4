@@ -2,15 +2,17 @@
 
 # Press Shift+F10 to execute it or replace it with your code.
 # Press Double Shift to search everywhere for classes, files, tool windows, actions, and settings.
-
-
-def print_hi(name):
-    # Use a breakpoint in the code line below to debug your script.
-    print(f'Hi, {name}')  # Press Ctrl+F8 to toggle the breakpoint.
-
-
-# Press the green button in the gutter to run the script.
+import numpy as np
+from Algorithms import minimax_algorithm
 if __name__ == '__main__':
-    print_hi('PyCharm')
+    board = [[0, 1, 2, 2, 1, 2, 2],
+             [1, 1, 2, 1, 1, 1, 2],
+             [1, 2, 2, 1, 1, 2, 2],
+             [1, 1, 1, 1, 1, 1, 1],
+             [1, 1, 2, 1, 1, 1, 1],
+             [1, 1, 1, 1, 1, 2, 2]]
+    depth = 5
+    AI_start = True
+    _val = minimax_algorithm(board , depth , AI_start)
+    print(_val)
 
-# See PyCharm help at https://www.jetbrains.com/help/pycharm/
